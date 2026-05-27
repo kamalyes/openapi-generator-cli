@@ -10,7 +10,7 @@ export async function loadOpenApiDocuments(options: GeneratorOptions): Promise<L
   const docs: LoadedDocument[] = [];
 
   for (const source of sources) {
-    const content = await readSource(source, options.cwd);
+    const content = await readSource(source, options);
     const document = YAML.parse(content) as OpenApiDocument;
     const sourceInfo = describeSource(source, options.cwd);
     docs.push({ ...sourceInfo, document });
@@ -34,16 +34,16 @@ async function collectSources(options: GeneratorOptions): Promise<string[]> {
   return Array.from(new Set(sources)).sort((a, b) => a.localeCompare(b));
 }
 
-async function readSource(source: string, cwd: string): Promise<string> {
+async function readSource(source: string, options: GeneratorOptions): Promise<string> {
   if (/^https?:\/\//i.test(source)) {
-    const response = await fetch(source);
+    const response = await fetch(source, { headers: options.headers });
     if (!response.ok) {
       throw new Error(`Failed to fetch ${source}: ${response.status} ${response.statusText}`);
     }
     return response.text();
   }
 
-  return fs.readFile(path.resolve(cwd, source), 'utf8');
+  return fs.readFile(path.resolve(options.cwd, source), 'utf8');
 }
 
 function describeSource(source: string, cwd: string): Omit<LoadedDocument, 'document'> {

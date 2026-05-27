@@ -13,6 +13,7 @@ export interface GeneratorOptions {
   output: string;
   docs: boolean;
   clean: boolean;
+  headers: Record<string, string>;
   cwd: string;
 }
 

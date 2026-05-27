@@ -16,16 +16,23 @@ export function parseOptions(argv: string[], cwd = process.cwd()): GeneratorOpti
     .option('-i, --input <file-or-url...>', 'OpenAPI JSON/YAML file or URL')
     .option('-g, --swagger-glob <glob>', 'glob for local OpenAPI JSON/YAML files')
     .option('-o, --output <dir>', 'output directory', 'generate')
+    .option('-H, --header <header...>', 'HTTP header for remote OpenAPI URLs, for example: "Authorization: Bearer token"')
+    .option('--bearer-token <token>', 'Bearer token for remote OpenAPI URLs')
     .option('--docs', 'generate Markdown docs', false)
     .option('--clean', 'remove generated output folders before writing', false)
     .action((raw) => {
       const inputs = Array.isArray(raw.input) ? raw.input : raw.input ? [raw.input] : [];
+      const headers = parseHeaders(raw.header);
+      if (raw.bearerToken) {
+        headers.Authorization = `Bearer ${raw.bearerToken}`;
+      }
       const options: GeneratorOptions = {
         inputs,
         swaggerGlob: raw.swaggerGlob,
         output: path.resolve(cwd, raw.output),
         docs: Boolean(raw.docs),
         clean: Boolean(raw.clean),
+        headers,
         cwd,
       };
 
@@ -46,4 +53,25 @@ function validateOptions(options: GeneratorOptions): void {
   if (!options.inputs.length && !options.swaggerGlob) {
     throw new Error('Provide --input or --swagger-glob.');
   }
+}
+
+function parseHeaders(value: unknown): Record<string, string> {
+  const headers: Record<string, string> = {};
+  const items = Array.isArray(value) ? value : value ? [value] : [];
+
+  for (const item of items) {
+    const raw = String(item);
+    const separator = raw.indexOf(':');
+    if (separator <= 0) {
+      throw new Error(`Invalid --header value "${raw}". Expected "Name: value".`);
+    }
+    const name = raw.slice(0, separator).trim();
+    const headerValue = raw.slice(separator + 1).trim();
+    if (!name || !headerValue) {
+      throw new Error(`Invalid --header value "${raw}". Expected "Name: value".`);
+    }
+    headers[name] = headerValue;
+  }
+
+  return headers;
 }

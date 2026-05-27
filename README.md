@@ -130,6 +130,25 @@ node dist/cli.js generate \
   --output "./generate"
 ```
 
+读取需要鉴权的远程 Swagger：
+
+```bash
+node dist/cli.js generate \
+  --input "https://example.com/openapi.json" \
+  --bearer-token "your-token" \
+  --output "./generate"
+```
+
+也可以直接传任意请求头，适用于 API Key、Cookie 或自定义网关鉴权：
+
+```bash
+node dist/cli.js generate \
+  --input "https://example.com/openapi.json" \
+  --header "X-API-Key: your-api-key" \
+  --header "Cookie: session=your-session" \
+  --output "./generate"
+```
+
 在当前 xxx 工作区中常用命令：
 
 ```bash
@@ -144,10 +163,13 @@ node dist/cli.js generate \
 - `--input <file-or-url>`：读取一个本地 OpenAPI/Swagger 文件或远程 URL
 - `--swagger-glob <glob>`：读取多个本地 OpenAPI/Swagger 文件
 - `--output <dir>`：输出目录，默认是当前目录下的 `generate`
+- `--header <header>`：远程 OpenAPI URL 的请求头，可重复传入，例如 `--header "Authorization: Bearer token"`
+- `--bearer-token <token>`：远程 OpenAPI URL 的 Bearer Token 快捷参数，会生成 `Authorization: Bearer <token>`
 - `--docs`：生成模块级 Markdown 文档；默认关闭
 - `--clean`：写入前清理旧的生成目录，避免残留过期文件
 
 `--input` 和 `--swagger-glob` 可以同时使用，生成器会把读取到的文档合并到同一套输出中
+`--header` 和 `--bearer-token` 只影响远程 `http/https` 输入，本地文件和 glob 不会使用这些请求头
 
 ## 输出结构
 
