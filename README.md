@@ -38,13 +38,13 @@ npm uninstall -g @openapitools/openapi-generator-cli openapi-generator-cli
 
 ### 从 Git 在线安装
 
-如果还没有发布到 npm，可以直接通过 Git 仓库安装。把下面的 `<repo-url>` 替换成实际仓库地址：
+如果还没有发布到 npm，可以直接通过 Git 仓库的 `dist` 分支安装`master` 分支只保存 TypeScript 源码；GitHub Actions 会自动编译并把可安装产物发布到 `dist` 分支
 
 ```bash
-npm install -g git+https://github.com/kamalyes/openapi-generator-cli.git
+npm install -g git+https://github.com/kamalyes/openapi-generator-cli.git#dist
 ```
 
-Git 安装会执行 `prepare` 脚本自动构建 `dist/cli.js`，因此仓库不需要提交 `dist` 目录。安装后可以先确认命令是否来自本工具：
+`dist` 分支已经包含 `dist/cli.js`，安装时不会编译 TypeScript，也不需要使用者安装 `tsc`安装后可以先确认命令是否来自本工具：
 
 ```bash
 openapi-generator-cli --version
@@ -60,17 +60,25 @@ openapi-generator-cli generate \
   --clean
 ```
 
-也可以作为项目开发依赖安装：
+作为业务项目开发依赖安装时，也推荐使用 `dist` 分支：
 
 ```bash
-npm install -D git+https://github.com/kamalyes/openapi-generator-cli.git
+npm install -D git+https://github.com/kamalyes/openapi-generator-cli.git#dist
 ```
 
 如果之前已经安装过失败版本，建议强制重新安装或指定最新 commit，避免 npm 使用旧缓存：
 
 ```bash
 npm uninstall -g openapi-generator-cli
-npm install -g --force git+https://github.com/kamalyes/openapi-generator-cli.git#master
+npm install -g --force git+https://github.com/kamalyes/openapi-generator-cli.git#dist
+```
+
+`dist` 分支由仓库 workflow 自动维护，不需要手动提交构建产物每次 push 到 `master` 后，workflow 会执行：
+
+```text
+yarn install --frozen-lockfile
+yarn build
+publish dist/ + package.json + README.md + REFACTOR_PLAN.md + LICENSE -> dist branch
 ```
 
 然后在项目 `package.json` 中配置：
@@ -86,10 +94,12 @@ npm install -g --force git+https://github.com/kamalyes/openapi-generator-cli.git
 如果需要指定分支、tag 或 commit：
 
 ```bash
-npm install -D git+https://github.com/kamalyes/openapi-generator-cli.git#master
+npm install -D git+https://github.com/kamalyes/openapi-generator-cli.git#dist
 npm install -D git+https://github.com/kamalyes/openapi-generator-cli.git#v0.1.0
 npm install -D git+https://github.com/kamalyes/openapi-generator-cli.git#<commit-sha>
 ```
+
+注意：`master` 是源码分支，不建议直接作为 Git 安装目标；用于安装的分支应当是 workflow 生成的 `dist` 分支，或指向 `dist` 分支产物的 tag/commit
 
 ### 本地开发安装
 

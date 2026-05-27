@@ -17,7 +17,7 @@
     "build": "tsc -p tsconfig.json",
     "cli": "node ./dist/cli.js",
     "generate": "node ./dist/cli.js generate",
-    "prepare": "npm run build",
+    "prepublishOnly": "npm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "engines": {

@@ -1,0 +1,64 @@
+name: Publish dist branch
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  publish-dist:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.20.2'
+          cache: yarn
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Build CLI
+        run: yarn build
+
+      - name: Create installable package
+        run: |
+          rm -rf .dist-release
+          mkdir -p .dist-release
+          cp -R dist .dist-release/dist
+          cp README.md REFACTOR_PLAN.md LICENSE .dist-release/
+          node <<'NODE'
+          const fs = require('node:fs');
+          const source = JSON.parse(fs.readFileSync('package.json', 'utf8'));
+          const output = {
+            name: source.name,
+            version: source.version,
+            description: source.description,
+            license: source.license,
+            private: source.private,
+            type: source.type,
+            bin: source.bin,
+            files: source.files,
+            engines: source.engines,
+            dependencies: source.dependencies,
+          };
+          fs.writeFileSync('.dist-release/package.json', `${JSON.stringify(output, null, 2)}\n`);
+          NODE
+
+      - name: Publish to dist branch
+        uses: peaceiris/actions-gh-pages@v4
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_branch: dist
+          publish_dir: .dist-release
+          force_orphan: true
+          commit_message: 'build: publish dist for ${{ github.sha }}'
