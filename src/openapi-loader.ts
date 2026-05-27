@@ -1,0 +1,70 @@
+import fs from 'node:fs/promises';
+import path from 'node:path';
+import fg from 'fast-glob';
+import YAML from 'yaml';
+import type { GeneratorOptions, LoadedDocument, OpenApiDocument } from './types.js';
+import { safeFileBase, toKebabCase } from './utils/names.js';
+
+export async function loadOpenApiDocuments(options: GeneratorOptions): Promise<LoadedDocument[]> {
+  const sources = await collectSources(options);
+  const docs: LoadedDocument[] = [];
+
+  for (const source of sources) {
+    const content = await readSource(source, options.cwd);
+    const document = YAML.parse(content) as OpenApiDocument;
+    const sourceInfo = describeSource(source, options.cwd);
+    docs.push({ ...sourceInfo, document });
+  }
+
+  return docs;
+}
+
+async function collectSources(options: GeneratorOptions): Promise<string[]> {
+  const sources = [...options.inputs];
+  if (options.swaggerGlob) {
+    const matches = await fg(options.swaggerGlob, {
+      cwd: options.cwd,
+      absolute: true,
+      onlyFiles: true,
+      unique: true,
+    });
+    sources.push(...matches);
+  }
+
+  return Array.from(new Set(sources)).sort((a, b) => a.localeCompare(b));
+}
+
+async function readSource(source: string, cwd: string): Promise<string> {
+  if (/^https?:\/\//i.test(source)) {
+    const response = await fetch(source);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch ${source}: ${response.status} ${response.statusText}`);
+    }
+    return response.text();
+  }
+
+  return fs.readFile(path.resolve(cwd, source), 'utf8');
+}
+
+function describeSource(source: string, cwd: string): Omit<LoadedDocument, 'document'> {
+  if (/^https?:\/\//i.test(source)) {
+    const url = new URL(source);
+    const base = path.posix.basename(url.pathname) || 'openapi';
+    return {
+      sourceId: source,
+      sourceModule: 'remote',
+      sourceName: safeFileBase(base.replace(/\.(json|ya?ml)$/i, '')),
+    };
+  }
+
+  const absolutePath = path.resolve(cwd, source);
+  const modulePart = path.basename(path.dirname(absolutePath));
+  const base = path.basename(absolutePath).replace(/\.(json|ya?ml)$/i, '');
+
+  return {
+    absolutePath,
+    sourceId: path.relative(cwd, absolutePath),
+    sourceModule: toKebabCase(modulePart) || 'default',
+    sourceName: safeFileBase(base),
+  };
+}
