@@ -6,7 +6,7 @@ export function parseOptions(argv: string[], cwd = process.cwd()): GeneratorOpti
   const program = new Command();
 
   program
-    .name('openapi-generator-cli')
+    .name('openapi-generator-ts-cli')
     .description('Generate a TypeScript OpenAPI client')
     .version('0.1.0');
 

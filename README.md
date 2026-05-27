@@ -1,4 +1,4 @@
-# openapi-generator-cli
+# openapi-generator-ts-cli
 
 [![Version](https://img.shields.io/badge/version-v0.1.0-blue.svg)](./package.json)
 [![Node.js](https://img.shields.io/badge/Node.js-%3E%3D20.19.0-339933.svg?logo=node.js)](https://nodejs.org/)
@@ -23,38 +23,25 @@
 
 ## 安装与构建
 
-如果执行 `openapi-generator-cli` 时出现类似下面的输出，说明当前命令命中了官方 `@openapitools/openapi-generator-cli`，不是这个纯 TS 生成器：
-
-```text
-Did set selected version to 7.22.0
-[error] Found unexpected parameters: [--input, ...]
-```
-
-可以先卸载或避开官方全局命令：
-
-```bash
-npm uninstall -g @openapitools/openapi-generator-cli openapi-generator-cli
-```
-
 ### 从 Git 在线安装
 
 如果还没有发布到 npm，可以直接通过 Git 仓库的 `dist` 分支安装`master` 分支只保存 TypeScript 源码；GitHub Actions 会自动编译并把可安装产物发布到 `dist` 分支
 
 ```bash
-npm install -g git+https://github.com/kamalyes/openapi-generator-cli.git#dist
+npm install -g git+https://github.com/kamalyes/openapi-generator-ts-cli.git#dist
 ```
 
 `dist` 分支已经包含 `dist/cli.js`，安装时不会编译 TypeScript，也不需要使用者安装 `tsc`安装后可以先确认命令是否来自本工具：
 
 ```bash
-openapi-generator-cli --version
-openapi-generator-cli --help
+openapi-generator-ts-cli --version
+openapi-generator-ts-cli --help
 ```
 
 安装后可以直接使用 `package.json` 中声明的命令：
 
 ```bash
-openapi-generator-cli generate \
+openapi-generator-ts-cli generate \
   --swagger-glob "./openapi/**/*.swagger.yaml" \
   --output "./generate" \
   --clean
@@ -63,14 +50,14 @@ openapi-generator-cli generate \
 作为业务项目开发依赖安装时，也推荐使用 `dist` 分支：
 
 ```bash
-npm install -D git+https://github.com/kamalyes/openapi-generator-cli.git#dist
+npm install -D git+https://github.com/kamalyes/openapi-generator-ts-cli.git#dist
 ```
 
 如果之前已经安装过失败版本，建议强制重新安装或指定最新 commit，避免 npm 使用旧缓存：
 
 ```bash
-npm uninstall -g openapi-generator-cli
-npm install -g --force git+https://github.com/kamalyes/openapi-generator-cli.git#dist
+npm uninstall -g openapi-generator-ts-cli
+npm install -g --force git+https://github.com/kamalyes/openapi-generator-ts-cli.git#dist
 ```
 
 `dist` 分支由仓库 workflow 自动维护，不需要手动提交构建产物每次 push 到 `master` 后，workflow 会执行：
@@ -86,7 +73,7 @@ publish dist/ + package.json + README.md + REFACTOR_PLAN.md + LICENSE -> dist br
 ```json
 {
   "scripts": {
-    "generate:api": "openapi-generator-cli generate --swagger-glob \"./openapi/**/*.swagger.yaml\" --output \"./generate\" --clean"
+    "generate:api": "openapi-generator-ts-cli generate --swagger-glob \"./openapi/**/*.swagger.yaml\" --output \"./generate\" --clean"
   }
 }
 ```
@@ -94,9 +81,9 @@ publish dist/ + package.json + README.md + REFACTOR_PLAN.md + LICENSE -> dist br
 如果需要指定分支、tag 或 commit：
 
 ```bash
-npm install -D git+https://github.com/kamalyes/openapi-generator-cli.git#dist
-npm install -D git+https://github.com/kamalyes/openapi-generator-cli.git#v0.1.0
-npm install -D git+https://github.com/kamalyes/openapi-generator-cli.git#<commit-sha>
+npm install -D git+https://github.com/kamalyes/openapi-generator-ts-cli.git#dist
+npm install -D git+https://github.com/kamalyes/openapi-generator-ts-cli.git#v0.1.0
+npm install -D git+https://github.com/kamalyes/openapi-generator-ts-cli.git#<commit-sha>
 ```
 
 注意：`master` 是源码分支，不建议直接作为 Git 安装目标；用于安装的分支应当是 workflow 生成的 `dist` 分支，或指向 `dist` 分支产物的 tag/commit
