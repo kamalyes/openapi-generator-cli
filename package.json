@@ -1,12 +1,12 @@
 {
-  "name": "openapi-generator-ts-cli",
+  "name": "openapi-generator-cli",
   "version": "0.1.0",
   "description": "A lightweight TypeScript OpenAPI generator with module-oriented output.",
   "license": "Apache-2.0",
   "private": false,
   "type": "module",
   "bin": {
-    "openapi-generator-ts": "./dist/cli.js"
+    "openapi-generator-cli": "./dist/cli.js"
   },
   "files": [
     "dist",
@@ -17,6 +17,7 @@
     "build": "tsc -p tsconfig.json",
     "cli": "node ./dist/cli.js",
     "generate": "node ./dist/cli.js generate",
+    "prepare": "npm run build",
     "typecheck": "tsc -p tsconfig.json --noEmit"
   },
   "engines": {

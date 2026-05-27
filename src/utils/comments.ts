@@ -4,6 +4,7 @@ export interface CommentSource {
 }
 
 export function commentText(source: CommentSource | undefined): string | undefined {
+  // OpenAPI 里 description 信息更完整；没有 description 时再退回 title
   const value = source?.description || source?.title;
   if (!value) return undefined;
   const text = normalizeComment(value).join('\n');
@@ -27,6 +28,7 @@ export function jsDocFrom(source: CommentSource | undefined, indent = ''): strin
 
 function normalizeComment(value: string | undefined): string[] {
   if (!value) return [];
+  // 注释内容来自外部 Swagger，必须规整换行并转义 */，避免生成非法 TS
   const lines = value
     .replace(/\r\n?/g, '\n')
     .split('\n')

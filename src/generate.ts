@@ -8,6 +8,7 @@ import { cleanOutput, writeProject } from './writers/write-project.js';
 import { staticFiles } from './writers/static-files.js';
 
 export async function generate(options: GeneratorOptions): Promise<void> {
+  // 生成流程只围绕 OpenAPI/Swagger 文档展开：读取文档 -> 构建中间上下文 -> 写入 TS 文件
   const docs = await loadOpenApiDocuments(options);
   const context = buildContext(docs);
   const modelFiles = generateModelFiles(context);
@@ -21,10 +22,12 @@ export async function generate(options: GeneratorOptions): Promise<void> {
   ];
 
   if (options.docs) {
+    // docs 是显式可选项，默认不生成，避免污染客户端 SDK 输出目录
     files.push(...generateDocsFiles(context));
   }
 
   if (options.clean) {
+    // clean 只清理生成器负责的目录和入口文件，避免误删调用方自己的文件
     await cleanOutput(options.output);
   }
 

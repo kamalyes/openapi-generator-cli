@@ -36,6 +36,7 @@ export interface AxiosLikeInstance {
   request<T = unknown>(config: RequestArgs): Promise<{ data: T }>;
 }
 
+// 默认请求适配器用于支持无参 new XxxApi()；业务项目仍可传入 axios 实例覆盖
 type FetchLike = (
   input: string,
   init?: unknown,
@@ -76,6 +77,7 @@ export class BaseAPI {
   }
 
   protected async request<T>(args: RequestArgs): Promise<T> {
+    // 基础配置和单次请求配置在这里合并，具体 API 方法只负责提供路径、参数和 body
     const response = await this.axios.request<T>({
       ...args,
       url: \`\${this.configuration.basePath}\${args.url ?? ''}\`,

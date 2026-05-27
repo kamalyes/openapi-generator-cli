@@ -26,6 +26,7 @@ export function buildContext(docs: LoadedDocument[]): BuildContext {
   const modelBySchema = new Map<string, ModelDefinition>();
   const ownerBySchema = new Map<string, LoadedDocument>();
 
+  // schema 名在合并后的 SDK 中必须唯一；重复 schema 保留第一次出现的定义
   for (const loaded of docs) {
     const schemas = collectSchemas(loaded.document);
     for (const [schemaName, schema] of Object.entries(schemas)) {
@@ -39,6 +40,7 @@ export function buildContext(docs: LoadedDocument[]): BuildContext {
   }
 
   const operations: OperationDefinition[] = [];
+  // API 以 Swagger tag 为生成文件维度，保持和常见 typescript-axios 输出习惯接近
   for (const loaded of docs) {
     for (const [urlPath, pathItem] of Object.entries(loaded.document.paths ?? {})) {
       for (const [method, operation] of Object.entries(pathItem)) {
@@ -126,13 +128,16 @@ function schemaNamespace(schemaName: string): string | undefined {
 }
 
 function modelTarget(namespace: string | undefined, loaded: LoadedDocument): TypeTarget {
+  // enums 是公共类型出口，和 models/apis 平级，便于业务侧统一导入枚举
   if (namespace === 'enums') {
     return { rootDir: 'enums', modulePath: [], fileBase: 'common' };
   }
 
+  // 共享 namespace 不和 service-local model 混在一起，避免单个服务文件变得过大
   if (namespace && namespace !== loaded.sourceModule) {
     return { rootDir: 'models', modulePath: [namespace], fileBase: 'common' };
   }
 
+  // 默认按 Swagger 文件所在目录和文件名 1:1 输出，方便回溯来源文档
   return { rootDir: 'models', modulePath: [loaded.sourceModule], fileBase: loaded.sourceName };
 }
